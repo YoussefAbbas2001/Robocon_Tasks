@@ -1,0 +1,29 @@
+1-PID Control
+ الPID من المواضيع المهمة جدا وبنعتمد عليه كتير جدا ف شغلنا
+ف المطلوب منكم ف ال pid انكم تفهموه كويس جدا و تبدأوا تعملوله implementation ككود.
+ طبعا انتو عندكم فكرة عنه من سيشن الكنترول اللي اتشرحت في التريننج. 
+ده لينك السيشن لو حد حابب يرجع لها.
+https://drive.google.com/drive/u/0/folders/15SpVPoigcwogrRkfRbAwMnFjuCLfVCoK?fbclid=IwAR0Vt2lg-MaNjuD1t2AMCnHZgAXUyUfbfxzvXI-vm2jUKehaurtq8Uj2ouM
+
+وديه playlist كويسة جدا بتشرح pid
+https://www.youtube.com/playlist?list=PLn8PRpmsu08pQBgjxYFXSsODEF3Jqmm-y
+وده article كويس برضو بيشرح PID وبيشرح فيه مشاكل زي مشكلة ال derivative kick 
+https://apmonitor.com/pdc/index.php/Main/ProportionalIntegralDerivative?fbclid=IwAR0XJrFLcucsMdmAJQU5dALjt3BsqjPX1ayB0hirkoT0SVm7LKJrbu9I6F0
+وفي مصادر كتير تقدروا تدوروا وتذاكروا من اي مصدر تاني.
+===============================================
+2-GIT 
+ف الاول هو ايه الفرق بين git و github  ؟
+باختصار الفرق git هو version control اوtool  من خلاله نقدر ننظم الproject  اللي شغالين عليه ويكون الموضوع منظم اكتر بين اعضاء التيم عشان ميحصلش مشاكل ف الشغل لما الاكواد تزيد وعدد الناس اللي شغالين عليها يزيدوا.
+اما github  هو hosting service  من خلال نقدر نmanage ال git repositories
+ف ده crash course بيشرح git و github
+https://www.freecodecamp.org/news/git-and-github-crash-course/
+وده كورس على udacity لو حد حابب يتعمق ف الموضوع اكتر 
+https://classroom.udacity.com/courses/ud123?fbclid=IwAR0T3nKsvnWxpSO3FCwekAVy5VadooPsPddt82SsF2LiToAvrW1uQrGIfhE
+
+وطبعا تقدروا تذاكروا من اي مصدر تاني يريحكم 
+==================================================
+3-Hardware 
+بالنسبة لجزء الهاردوير ف كان في playlist كويسة جدا من تريننج السنة اللي فاتت فيها شرح advanced Hardware topics  مهم نكون فاهمين المواضيع ديه كويس.
+ هنبدأ فيها الاسبوع ده وهنبدأ بمذاكرة اول 5 فيديوهات 
+وده لينك الليست 
+https://www.youtube.com/playlist?list=PLBXdR4DulnPsJaWZpB-yr8GugcxrG9uhS
