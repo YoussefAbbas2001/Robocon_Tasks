@@ -4,8 +4,8 @@ Date   : 6/11/2021
 About  : PID control DC Motor
 TO     : ROBOCON Traning Task3
 */
-#include <ros.h>
-#include <std_msgs/Float64.h>
+//#include <ros.h>
+//#include <std_msgs/Float64.h>
 
 #define SIGNAL_A PA_0  //PA_0
 #define SIGNAL_B PA_1  //PA_1
@@ -14,77 +14,87 @@ TO     : ROBOCON Traning Task3
 #define PWM_LIM  65536 //Limit of PWM signal
 #define PPRC     512   //Pulse Per Revolution Cycle
 #define MIN      60    //minute
-#define TAR_RED  0.1   //reduis of Wheel  in meter (Assumed)
 
-ros::NodeHandle nh;
-float target;
-void callback( const std_msgs::Float64& msg){ target = msg.data;}
-ros::Subscriber<std_msgs::Float64> sub("drive_motor", &callback );
+//ros::NodeHandle nh;
+//float target;
+//void callback( const std_msgs::Float64& msg){ target = msg.data;}
+//ros::Subscriber<std_msgs::Float64> sub("drive_motor", &callback );
 
-bool     dir     ;         //direction signal of MOTOR
-uint16_t pwm     ;         //PWM signal  of MOTOR
-float   control  ;         //Control Signal Out of PID control 
-float   set_point= 0    ;  //target speed
-float   integral = 0    ;  //Summation of error Added to control signal to overcome Steady-State Error
-float   diff     ;         //Derivative term
-float   kp = 10  ;         //Proportional Constant
-float   ki =  5  ;         //Intergral Constant
-float   kd =  1  ;         //Derivative Constant
-float   error=0  ;         //Error Signal (E = T - P)
-float   prev_e   ;         //previous error (to compute Derivaitve term)
-float   velocity ;         //Current Velocity of Motor
-float   distance ;         //Distance cutted by Motor in Meter
-float   delta_t  ;         //Change time = (current time) - (previous time)
-float   delta_e  ;         //Change Error= (Current error)- (previous error)
-float   prev_t=0 ;         //Previous time used to computer delta of time 
-float   curr_t=0 ;         //Current time usef to compute  delta of time
-uint32_t counter=0;        //Counter of Encoder
-uint32_t prev_c=0;         //Previous Count used to compute delta of distance
-uint32_t curr_c=0;         //Current Count used to compute delta of distance
-uint32_t delta_c ;         //Change in Distance = (Current Count) - (Previous Count)
+double  pwm      ;         //PWM signal  of MOTOR
+double  control  ;         //Control Signal Out of PID control 
+double  set_point= 0    ;  //target speed
+double  integral = 0    ;  //Summation of error Added to control signal to overcome Steady-State Error
+double  diff     = 0    ;  //Derivative term
+double  kp =  2  ;         //Proportional Constant
+double  ki =  1  ;         //Intergral Constant
+double  kd =  1  ;         //Derivative Constant
+double  error=0  ;         //Error Signal (E = T - P)
+double  prev_e=0 ;         //previous error (to compute Derivaitve term)
+double  velocity ;         //Current Velocity of Motor
+double  distance ;         //Distance cutted by Motor in Meter
+double  delta_t  ;         //Change time = (current time) - (previous time)
+double  delta_e  ;         //Change Error= (Current error)- (previous error)
+double  prev_t=0 ;         //Previous time used to computer delta of time 
+double  curr_t=0 ;         //Current time usef to compute  delta of time
+double  counter=0;         //Counter of Encoder
+double  prev_c=0 ;         //Previous Count used to compute delta of distance
+double  curr_c=0 ;         //Current Count used to compute delta of distance
+double  delta_c=0;         //Change in Distance = (Current Count) - (Previous Count)
+
+HardwareSerial Serial3(PB11, PB10);
 
 void setup() 
 {
-  nh.initNode();            //intialize node to subscribe
-  nh.subscribe(sub);        //subscribe data
-  pinMode(DIR,OUTPUT);      //Dirction of DC MOTOR
-  pinMode(PWM,OUTPUT);      //Speed of DC MOTOR
-  pinMode(SIGNAL_A, INPUT); //Encoder A
-  pinMode(SIGNAL_B, INPUT); //Encoder B
+  Serial3.begin(9600);
+//  nh.initNode();                   //intialize node to subscribe
+//  nh.subscribe(sub);               //subscribe data
+  pinMode(SIGNAL_A, INPUT_PULLUP);   //Encoder A
+  pinMode(SIGNAL_B, INPUT_PULLUP);   //Encoder B
+  pinMode(DIR,OUTPUT);               //Dirction of DC MOTOR
+  pinMode(PWM,OUTPUT);               //Speed of DC MOTOR
 
-  
+
+  set_point = 0  ;            //get set point from published data  
   attachInterrupt(digitalPinToInterrupt(SIGNAL_A), ISR_A, CHANGE);
   attachInterrupt(digitalPinToInterrupt(SIGNAL_B), ISR_B, CHANGE);
+
+//  (nh.getHardware()->setPort(&Serial1));
+//  (nh.getHardware()->setBaud(115200));
+//  nh.initNode();
+//  nh.subscribe(target);
 }
 
 void loop()
 {
-  set_point = target     ;                         //get set point from published data
-  get_speed();                                     //get (Velocity) and (delta time) 
-  prev_e    = error;                               //Previous Error to compute  Derivative Term
-  error     = set_point - velocity;                //error = <Target Velocity> - <Current Velocity>    
-  delta_e   = error-prev_e;                        //Change in Error
-  integral  = integral + error*delta_t;            //Interation of Error to overcome Steady-state error
-  diff      = delta_e/delta_t ;                    //Derivative Term to overcome Damping
-  control   = kp*error + ki*integral + kd*diff;    //Control Equation
+  calc();                                          //get (Velocity) and (delta time) 
 
-  dir = 1;                                         //Direction of Motor forward (under target)
   if (control<0)                                   //When Control is negative (Exceed Target) 
-      dir = -1;                                    //Direction of Motor Reverse (over target)
-  pwm = (uint16_t) fabs(control);                  //Absolute value of Control
+  {
+      digitalWrite(DIR , HIGH)
+  }
+  else if (control>0) 
+  {
+      digitalWrite(DIR,LOW)
+  }   
+  pwm = abs(control);                              //Absolute value of Control
   if(pwm > PWM_LIM)                                //if Control signal exceed max PWM
      pwm = PWM_LIM;                                //Maximum PWM signal in Arduino UNO
-     
-  setMotor(dir,pwm);                               //Put Process Signal in Planet
-  nh.spinOnce();
+  analogWrite(PWM,pwm);                            // Motor speed
+
+  Serial3.print("rpm: ");
+  Serial3.println(error);
+  Serial3.print("error :");
+  Serial3.println(pwm );
+  Serial3.print("Speed : ");
+  Serial3.print(velocity);
+  Serial3.println(",");
+  delay(50);
+
 }
 
 
 
-void setMotor(int dir, int pwmVal)
-{
-  analogWrite(PWM,pwmVal); // Motor speed
-}
+
 
 void ISR_A()
 {
@@ -102,21 +112,26 @@ void ISR_B()
     counter--  ;
 }
 
+
 void get_speed()
 {
-  prev_t     = curr_t;
-  prev_c     = curr_c;         
   curr_t     = millis();
   curr_c     = counter;
+  delta_t    =(curr_t - prev_t)         ;          //Change in time  (ms)
+  delta_c    =(curr_c - prev_c)         ;          //Change in count (pulse)
+  velocity   =(delta_c)/(delta_t) *1000 ;          //curr_speed      (pulse/s)  
+  velocity   =(velocity/PPRC)*MIN       ;          //curr_speed      (RPM)
   
-  delta_t    =(curr_t - prev_t)/1000;   //Change in time  (s)
-  delta_c    =(curr_c - prev_c)     ;   //Change in count (pulse)
-  velocity   =(delta_c)/(delta_t)   ;   //curr_speed      (pulse/s)  
-  velocity   = velocity/(PPRC*MIN)  ;   //curr_speed      (RPM)
-}
+  error     = set_point - velocity;                //error = <Target Velocity> - <Current Velocity>    
+  delta_e   = error-prev_e;                        //Change in Error
+  integral  = integral + ki*error*delta_t;         //Interation of Error to overcome Steady-state error
+  diff      = delta_e/delta_t ;                    //Derivative Term to overcome Damping
+  control   = kp*error + integral + kd*diff;       //Control Equation
+//  control   = 100*control;                       //Map Control Signal to get better Response
 
-void get_distance()
-{
-  //Unused for now
-  distance =(float)((counter/PPRC)*2*PI*TAR_RED);    //Distance in Meter
+//Privous Values
+  prev_e     = error;                           
+  prev_c     = curr_c;         
+  prev_t     = curr_t;
+
 }
